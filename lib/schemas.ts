@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const invoiceSchema = z.object({
-  vendor: z.string().nullable().describe("Название поставщика"),
+  vendor: z.string().nullable().describe("Vendor / seller company name"),
   invoiceNumber: z.string().nullable(),
-  date: z.string().nullable().describe("Дата счёта в формате YYYY-MM-DD"),
-  currency: z.string().nullable().describe("Код валюты, например USD, EUR, UAH"),
+  date: z.string().nullable().describe("Invoice date in YYYY-MM-DD format"),
+  currency: z.string().nullable().describe("Currency code, e.g. USD, EUR, UAH"),
   items: z.array(
     z.object({
       description: z.string(),
@@ -13,9 +13,9 @@ export const invoiceSchema = z.object({
       total: z.number().nullable(),
     })
   ),
-  subtotal: z.number().nullable(),
-  tax: z.number().nullable().describe("Сумма НДС/налога"),
-  total: z.number().nullable(),
+  subtotal: z.number().nullable().describe("Total before tax"),
+  tax: z.number().nullable().describe("Tax / VAT amount"),
+  total: z.number().nullable().describe("Grand total including tax"),
 });
 
 export const resumeSchema = z.object({
@@ -23,14 +23,14 @@ export const resumeSchema = z.object({
   email: z.string().nullable(),
   phone: z.string().nullable(),
   location: z.string().nullable(),
-  summary: z.string().nullable().describe("Краткое описание кандидата, 1-2 предложения"),
+  summary: z.string().nullable().describe("Short candidate summary, 1-2 sentences"),
   skills: z.array(z.string()),
   experience: z.array(
     z.object({
       company: z.string(),
       title: z.string().nullable(),
       start: z.string().nullable(),
-      end: z.string().nullable().describe("null или 'present', если работает сейчас"),
+      end: z.string().nullable().describe("null or 'present' if this is the current job"),
       description: z.string().nullable(),
     })
   ),
@@ -51,7 +51,7 @@ export const schemas = { invoice: invoiceSchema, resume: resumeSchema } as const
 
 export const prompts: Record<Mode, string> = {
   invoice:
-    "Извлеки данные из этого счёта. Если поля нет в документе, ставь null. Ничего не выдумывай. Числа без символов валюты.",
+    "Extract the data from this invoice. If a field is not in the document, use null. Do not invent anything. Return numbers without currency symbols.",
   resume:
-    "Извлеки данные из этого резюме. Если поля нет в документе, ставь null. Ничего не выдумывай. Навыки верни отдельными короткими строками.",
+    "Extract the data from this résumé. If a field is not in the document, use null. Do not invent anything. Return skills as separate short strings.",
 };
