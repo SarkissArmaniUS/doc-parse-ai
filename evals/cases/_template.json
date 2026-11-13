@@ -1,12 +1,12 @@
 {
   "mode": "invoice",
   "expected": {
-    "vendor": "Название поставщика",
+    "vendor": "Vendor name",
     "invoiceNumber": "INV-001",
     "date": "2026-01-31",
     "currency": "USD",
     "items": [
-      { "description": "Услуга", "quantity": 2, "unitPrice": 50, "total": 100 }
+      { "description": "Service", "quantity": 2, "unitPrice": 50, "total": 100 }
     ],
     "subtotal": 100,
     "tax": 20,

@@ -3,11 +3,12 @@ import { APICallError, RetryError, generateObject } from "ai";
 import type { z } from "zod";
 import { prompts, schemas, type Invoice, type Mode, type Resume } from "./schemas";
 
+// Models are tried in order: if the first one is overloaded, the next one is used.
 const MODELS = (
-    process.env.GEMINI_MODELS ?? "gemini-flash-latest,gemini-flash-lite-latest"
+  process.env.GEMINI_MODELS ?? "gemini-flash-latest,gemini-flash-lite-latest"
 ).split(",").map((s) => s.trim()).filter(Boolean);
 
-/** true, если ошибка временная: перегрузка, лимит или таймаут. */
+/** True if the error is temporary: overload, rate limit, or timeout. */
 export function isBusy(e: unknown): boolean {
   const err = RetryError.isInstance(e) ? e.lastError : e;
   if (APICallError.isInstance(err)) {
@@ -16,6 +17,7 @@ export function isBusy(e: unknown): boolean {
   return err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
 }
 
+/** Shared by the API route and the eval script. */
 export async function extract(mode: Mode, pdf: Uint8Array) {
   let lastError: unknown;
   for (const name of MODELS) {
@@ -23,7 +25,7 @@ export async function extract(mode: Mode, pdf: Uint8Array) {
       const { object, usage } = await generateObject({
         model: google(name),
         maxRetries: 1,
-        abortSignal: AbortSignal.timeout(25_000),
+        abortSignal: AbortSignal.timeout(25_000), // two models fit into Vercel's 60 s limit
         schema: schemas[mode] as z.ZodType<Invoice | Resume>,
         messages: [
           {
@@ -38,7 +40,7 @@ export async function extract(mode: Mode, pdf: Uint8Array) {
       return { data: object, usage, model: name };
     } catch (e) {
       lastError = e;
-      if (!isBusy(e)) throw e;
+      if (!isBusy(e)) throw e; // a bad key or schema is not fixed by switching models
     }
   }
   throw lastError;
