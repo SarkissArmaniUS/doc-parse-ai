@@ -12,7 +12,6 @@ const limiter = configured
     })
   : null;
 
-/** Returns true if the request is allowed. Without Upstash the limit is off (local development). */
 export async function allow(ip: string): Promise<boolean> {
   if (!limiter) return true;
   const { success } = await limiter.limit(ip);
