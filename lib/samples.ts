@@ -23,7 +23,7 @@ export const sampleResume: Resume = {
   summary: "Full-stack developer with 2 years of experience in React and Node.js.",
   skills: ["TypeScript", "React", "Next.js", "Node.js", "PostgreSQL", "Docker"],
   experience: [
-    { company: "WebForge", title: "Junior Developer", start: "2024-03", end: "present", description: "Разработка админ-панелей на React и REST API на Node.js." },
+    { company: "WebForge", title: "Junior Developer", start: "2024-03", end: "present", description: "Building admin panels in React and REST APIs in Node.js." },
     { company: "Freelance", title: "Web Developer", start: "2023-01", end: "2024-02", description: "Websites and bots for small businesses." },
   ],
   education: [{ school: "Poltava National Technical University", degree: "Bachelor's, Computer Science", year: "2024" }],
