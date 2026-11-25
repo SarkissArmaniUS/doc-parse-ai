@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const invoiceSchema = z.object({
-  vendor: z.string().nullable().describe("Название поставщика"),
-  invoiceNumber: z.string().nullable(),
-  date: z.string().nullable().describe("Дата счёта в формате YYYY-MM-DD"),
-  currency: z.string().nullable().describe("Код валюты, например USD, EUR, UAH"),
-  items: z.array(
+    vendor: z.string().nullable().describe("Vendor name"),
+    invoiceNumber: z.string().nullable(),
+    date: z.string().nullable().describe("Invoice date in YYYY-MM-DD format"),
+    currency: z.string().nullable().describe("Currency code, e.g., USD, EUR, UAH"),
+    items: z.array(
     z.object({
       description: z.string(),
       quantity: z.number().nullable(),
@@ -14,8 +14,8 @@ export const invoiceSchema = z.object({
     })
   ),
   subtotal: z.number().nullable(),
-  tax: z.number().nullable().describe("Сумма НДС/налога"),
-  total: z.number().nullable(),
+    tax: z.number().nullable().describe("VAT/tax amount"),
+    total: z.number().nullable(),
 });
 
 export const resumeSchema = z.object({
@@ -23,15 +23,15 @@ export const resumeSchema = z.object({
   email: z.string().nullable(),
   phone: z.string().nullable(),
   location: z.string().nullable(),
-  summary: z.string().nullable().describe("Краткое описание кандидата, 1-2 предложения"),
-  skills: z.array(z.string()),
+    summary: z.string().nullable().describe("Brief candidate summary, 1-2 sentences"),
+    skills: z.array(z.string()),
   experience: z.array(
     z.object({
       company: z.string(),
       title: z.string().nullable(),
       start: z.string().nullable(),
-      end: z.string().nullable().describe("null или 'present', если работает сейчас"),
-      description: z.string().nullable(),
+        end: z.string().nullable().describe("null or 'present' if currently working there"),
+        description: z.string().nullable(),
     })
   ),
   education: z.array(
@@ -51,7 +51,7 @@ export const schemas = { invoice: invoiceSchema, resume: resumeSchema } as const
 
 export const prompts: Record<Mode, string> = {
   invoice:
-    "Извлеки данные из этого счёта. Если поля нет в документе, ставь null. Ничего не выдумывай. Числа без символов валюты.",
-  resume:
-    "Извлеки данные из этого резюме. Если поля нет в документе, ставь null. Ничего не выдумывай. Навыки верни отдельными короткими строками.",
+      "Extract data from this invoice. If a field is missing from the document, set it to null. Do not hallucinate or invent anything. Return numbers without currency symbols.",
+    resume:
+        "Extract data from this resume. If a field is missing from the document, set it to null. Do not hallucinate or invent anything. Return skills as separate short strings.",
 };

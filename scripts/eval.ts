@@ -63,7 +63,7 @@ function scoreResume(t: Tally, got: Resume, exp: Resume) {
 
 async function main() {
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    console.error("Нет GOOGLE_GENERATIVE_AI_API_KEY. Запускай через `npm run eval` (подхватит .env.local).");
+    console.error("Missing GOOGLE_GENERATIVE_AI_API_KEY. Run via `npm run eval` (will load .env.local).");
     process.exit(1);
   }
 
@@ -73,7 +73,7 @@ async function main() {
     .filter((n) => !filter || n.includes(filter));
 
   if (names.length === 0) {
-    console.error(`В ${DIR} нет пар name.pdf + name.json.`);
+    console.error(`No name.pdf + name.json pairs found in ${DIR}.`);
     process.exit(1);
   }
 
@@ -111,12 +111,12 @@ async function main() {
       rows.push(`${name}: ok (${((Date.now() - t0) / 1000).toFixed(1)} с)`);
     } catch (e) {
       failed++;
-      rows.push(`${name}: ОШИБКА ${(e as Error).message}`);
+      rows.push(`${name}: ERROR ${(e as Error).message}`);
     }
   }
 
   const lines: string[] = [];
-  lines.push(`# Результаты evals`, "", `Файлов: ${names.length}, ошибок вызова: ${failed}, модель: ${process.env.GEMINI_MODEL ?? "gemini-flash-latest"}`, "");
+  lines.push(`# Evals results`, "", `Files: ${names.length}, call errors: ${failed}, model: ${process.env.GEMINI_MODEL ?? "gemini-flash-latest"}`, "");
 
   for (const mode of ["invoice", "resume"] as Mode[]) {
     const t = tally[mode];
@@ -125,7 +125,7 @@ async function main() {
     const ok = fields.reduce((s, [, v]) => s + v.ok, 0);
     const total = fields.reduce((s, [, v]) => s + v.total, 0);
     lines.push(`## ${mode === "invoice" ? "Счета" : "Резюме"}: общая точность ${((ok / total) * 100).toFixed(1)}%`, "");
-    lines.push("| Поле | Верно | Всего | Точность |", "|---|---|---|---|");
+    lines.push("| Field | Correct | Total | Accuracy |", "|---|---|---|---|");
     for (const [f, v] of fields) {
       lines.push(`| ${f} | ${v.ok} | ${v.total} | ${((v.ok / v.total) * 100).toFixed(0)}% |`);
     }
@@ -134,11 +134,11 @@ async function main() {
 
   if (invoiceCount > 0) {
     lines.push(
-      `Проверка сумм пометила ${flagged} из ${invoiceCount} счетов; решение верное (ошибка найдена или её нет) для ${correctlyFlagged} из ${invoiceCount}.`,
-      ""
+        `Totals check flagged ${flagged} of ${invoiceCount} invoices; decision was correct (error found or none exists) for ${correctlyFlagged} of ${invoiceCount}.`,
+        ""
     );
   }
-  lines.push(`Токены: ${inTok} вход, ${outTok} выход. Время: ${((Date.now() - started) / 1000).toFixed(0)} с.`, "", "```", ...rows, "```", "");
+  lines.push(`Tokens: ${inTok} input, ${outTok} output. Time: ${((Date.now() - started) / 1000).toFixed(0)} s.`, "", "```", ...rows, "```", "");
 
   const report = lines.join("\n");
   console.log(report);

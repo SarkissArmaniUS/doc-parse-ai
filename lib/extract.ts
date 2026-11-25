@@ -7,7 +7,6 @@ const MODELS = (
     process.env.GEMINI_MODELS ?? "gemini-flash-latest,gemini-flash-lite-latest"
 ).split(",").map((s) => s.trim()).filter(Boolean);
 
-/** true, если ошибка временная: перегрузка, лимит или таймаут. */
 export function isBusy(e: unknown): boolean {
   const err = RetryError.isInstance(e) ? e.lastError : e;
   if (APICallError.isInstance(err)) {

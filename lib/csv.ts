@@ -14,7 +14,7 @@ export function toCsv(mode: Mode, data: Invoice | Resume): string {
     for (const i of d.items) {
       lines.push(row([d.vendor, d.invoiceNumber, d.date, i.description, i.quantity, i.unitPrice, i.total]));
     }
-    lines.push(row([d.vendor, d.invoiceNumber, d.date, "ИТОГО (с налогом " + (d.tax ?? 0) + ")", "", "", d.total]));
+    lines.push(row([d.vendor, d.invoiceNumber, d.date, "TOTAL (incl. tax " + (d.tax ?? 0) + ")", "", "", d.total]));
     return lines.join("\n");
   }
   const d = data as Resume;

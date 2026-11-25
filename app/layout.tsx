@@ -6,13 +6,13 @@ const sans = IBM_Plex_Sans({ subsets: ["latin", "cyrillic"], weight: ["400", "50
 
 export const metadata: Metadata = {
   title: "DocParse AI",
-  description: "Загрузите счёт или резюме и получите структурированный JSON и CSV.",
+  description: "Upload an invoice or resume and get structured JSON and CSV.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={sans.variable}>
-      <body>{children}</body>
-    </html>
+      <html lang="en" className={sans.variable}>
+        <body>{children}</body>
+      </html>
   );
 }
