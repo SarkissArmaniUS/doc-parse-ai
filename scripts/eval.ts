@@ -1,4 +1,13 @@
-
+/**
+ * Evals: compares model output with hand-labeled ground truth.
+ *
+ * Put pairs of files in evals/cases:  name.pdf  +  name.json
+ * name.json format: { "mode": "invoice" | "resume", "expected": { ...matching the schema... } }
+ *
+ * Run:  npm run eval            (all cases)
+ *       npm run eval -- name    (only cases whose name contains "name")
+ * Output: a table in the console and the file evals/results.md
+ */
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { extract } from "../lib/extract";
@@ -21,6 +30,7 @@ function same(a: unknown, b: unknown): boolean {
   return norm(a) === norm(b);
 }
 
+/** Descriptions need not match word for word: one containing the other is enough. */
 function fuzzy(a: unknown, b: unknown): boolean {
   const x = norm(a), y = norm(b);
   return !!x && !!y && (x.includes(y) || y.includes(x));
@@ -63,7 +73,7 @@ function scoreResume(t: Tally, got: Resume, exp: Resume) {
 
 async function main() {
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    console.error("Missing GOOGLE_GENERATIVE_AI_API_KEY. Run via `npm run eval` (will load .env.local).");
+    console.error("GOOGLE_GENERATIVE_AI_API_KEY is missing. Run via `npm run eval` (it loads .env.local).");
     process.exit(1);
   }
 
@@ -86,7 +96,7 @@ async function main() {
     const spec: Case = JSON.parse(readFileSync(join(DIR, `${name}.json`), "utf8"));
     const pdf = new Uint8Array(readFileSync(join(DIR, `${name}.pdf`)));
     const t0 = Date.now();
-    await new Promise((r) => setTimeout(r, 6000));
+    await new Promise((r) => setTimeout(r, 6000)); // free tier: requests-per-minute limit
     try {
       const { data, usage } = await extract(spec.mode, pdf);
       inTok += usage.inputTokens ?? 0;
@@ -100,7 +110,7 @@ async function main() {
         const issues = validateInvoice(data as Invoice);
         const hasError = issues.some((i) => i.severity === "error");
         if (hasError) flagged++;
-
+        // The check is useful if it flags wrong answers and leaves correct ones alone
         const afterOk = Object.values(tally.invoice).reduce((s, v) => s + v.ok, 0);
         const afterTotal = Object.values(tally.invoice).reduce((s, v) => s + v.total, 0);
         const perfect = afterOk - before === afterTotal - beforeTotal;
@@ -108,7 +118,7 @@ async function main() {
       } else {
         scoreResume(tally.resume, data as Resume, spec.expected as Resume);
       }
-      rows.push(`${name}: ok (${((Date.now() - t0) / 1000).toFixed(1)} с)`);
+      rows.push(`${name}: ok (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
     } catch (e) {
       failed++;
       rows.push(`${name}: ERROR ${(e as Error).message}`);
@@ -116,7 +126,7 @@ async function main() {
   }
 
   const lines: string[] = [];
-  lines.push(`# Evals results`, "", `Files: ${names.length}, call errors: ${failed}, model: ${process.env.GEMINI_MODEL ?? "gemini-flash-latest"}`, "");
+  lines.push(`# Eval results`, "", `Files: ${names.length}, failed calls: ${failed}, models: ${process.env.GEMINI_MODELS ?? "gemini-flash-latest,gemini-flash-lite-latest"}`, "");
 
   for (const mode of ["invoice", "resume"] as Mode[]) {
     const t = tally[mode];
@@ -124,7 +134,7 @@ async function main() {
     if (fields.length === 0) continue;
     const ok = fields.reduce((s, [, v]) => s + v.ok, 0);
     const total = fields.reduce((s, [, v]) => s + v.total, 0);
-    lines.push(`## ${mode === "invoice" ? "Счета" : "Резюме"}: общая точность ${((ok / total) * 100).toFixed(1)}%`, "");
+    lines.push(`## ${mode === "invoice" ? "Invoices" : "Résumés"}: overall accuracy ${((ok / total) * 100).toFixed(1)}%`, "");
     lines.push("| Field | Correct | Total | Accuracy |", "|---|---|---|---|");
     for (const [f, v] of fields) {
       lines.push(`| ${f} | ${v.ok} | ${v.total} | ${((v.ok / v.total) * 100).toFixed(0)}% |`);
@@ -134,11 +144,11 @@ async function main() {
 
   if (invoiceCount > 0) {
     lines.push(
-        `Totals check flagged ${flagged} of ${invoiceCount} invoices; decision was correct (error found or none exists) for ${correctlyFlagged} of ${invoiceCount}.`,
-        ""
+      `The arithmetic check flagged ${flagged} of ${invoiceCount} invoices; its verdict was right (error caught or none present) for ${correctlyFlagged} of ${invoiceCount}.`,
+      ""
     );
   }
-  lines.push(`Tokens: ${inTok} input, ${outTok} output. Time: ${((Date.now() - started) / 1000).toFixed(0)} s.`, "", "```", ...rows, "```", "");
+  lines.push(`Tokens: ${inTok} in, ${outTok} out. Time: ${((Date.now() - started) / 1000).toFixed(0)} s.`, "", "```", ...rows, "```", "");
 
   const report = lines.join("\n");
   console.log(report);

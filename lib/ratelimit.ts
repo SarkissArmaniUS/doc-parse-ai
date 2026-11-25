@@ -7,7 +7,7 @@ const configured =
 const limiter = configured
   ? new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(5, "1 h"),
+      limiter: Ratelimit.slidingWindow(5, "1 h"), // 5 parses per hour per IP
       prefix: "docparse",
     })
   : null;

@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const invoiceSchema = z.object({
-    vendor: z.string().nullable().describe("Vendor name"),
-    invoiceNumber: z.string().nullable(),
-    date: z.string().nullable().describe("Invoice date in YYYY-MM-DD format"),
-    currency: z.string().nullable().describe("Currency code, e.g., USD, EUR, UAH"),
-    items: z.array(
+  vendor: z.string().nullable().describe("Vendor / seller company name"),
+  invoiceNumber: z.string().nullable(),
+  date: z.string().nullable().describe("Invoice date in YYYY-MM-DD format"),
+  currency: z.string().nullable().describe("Currency code, e.g. USD, EUR, UAH"),
+  items: z.array(
     z.object({
       description: z.string(),
       quantity: z.number().nullable(),
@@ -13,9 +13,9 @@ export const invoiceSchema = z.object({
       total: z.number().nullable(),
     })
   ),
-  subtotal: z.number().nullable(),
-    tax: z.number().nullable().describe("VAT/tax amount"),
-    total: z.number().nullable(),
+  subtotal: z.number().nullable().describe("Total before tax"),
+  tax: z.number().nullable().describe("Tax / VAT amount"),
+  total: z.number().nullable().describe("Grand total including tax"),
 });
 
 export const resumeSchema = z.object({
@@ -23,15 +23,15 @@ export const resumeSchema = z.object({
   email: z.string().nullable(),
   phone: z.string().nullable(),
   location: z.string().nullable(),
-    summary: z.string().nullable().describe("Brief candidate summary, 1-2 sentences"),
-    skills: z.array(z.string()),
+  summary: z.string().nullable().describe("Short candidate summary, 1-2 sentences"),
+  skills: z.array(z.string()),
   experience: z.array(
     z.object({
       company: z.string(),
       title: z.string().nullable(),
       start: z.string().nullable(),
-        end: z.string().nullable().describe("null or 'present' if currently working there"),
-        description: z.string().nullable(),
+      end: z.string().nullable().describe("null or 'present' if this is the current job"),
+      description: z.string().nullable(),
     })
   ),
   education: z.array(
@@ -51,7 +51,7 @@ export const schemas = { invoice: invoiceSchema, resume: resumeSchema } as const
 
 export const prompts: Record<Mode, string> = {
   invoice:
-      "Extract data from this invoice. If a field is missing from the document, set it to null. Do not hallucinate or invent anything. Return numbers without currency symbols.",
-    resume:
-        "Extract data from this resume. If a field is missing from the document, set it to null. Do not hallucinate or invent anything. Return skills as separate short strings.",
+    "Extract the data from this invoice. If a field is not in the document, use null. Do not invent anything. Return numbers without currency symbols.",
+  resume:
+    "Extract the data from this résumé. If a field is not in the document, use null. Do not invent anything. Return skills as separate short strings.",
 };

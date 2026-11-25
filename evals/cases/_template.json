@@ -1,7 +1,7 @@
 {
   "mode": "invoice",
   "expected": {
-    "vendor": "Vendor Name",
+    "vendor": "Vendor name",
     "invoiceNumber": "INV-001",
     "date": "2026-01-31",
     "currency": "USD",
