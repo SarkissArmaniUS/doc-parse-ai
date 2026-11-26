@@ -4,9 +4,7 @@ Upload an invoice or résumé as a PDF and get structured data back: a clean tab
 
 **Stack:** Next.js 15 (App Router), TypeScript, Tailwind 4, Vercel AI SDK (`generateObject`), Zod, Gemini API (free tier), Upstash Ratelimit.
 
-[Live demo](https://your-app.vercel.app) · [Code](https://github.com/you/docparse-ai)
-
-![DocParse AI screenshot](docs/screenshot.png)
+[Live demo](https://doc-parse-ai.vercel.app)
 
 ## How it works
 
